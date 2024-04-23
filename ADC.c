@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 void setADC(uint8_t voltaje, uint8_t justificacion, uint8_t canal){
-	if(voltaje == 0){
+	if(voltaje == 0){ // sETEAR EL TIPO DE VOLTAJE DE REFERENCIA PARA EL ADC
 		ADMUX &= ~((1 << REFS0) | (1 << REFS1)); 
 	}
 	else if(voltaje == 1){
@@ -22,39 +22,39 @@ void setADC(uint8_t voltaje, uint8_t justificacion, uint8_t canal){
 	}
 	
 	
-	if(justificacion == 1){
+	if(justificacion == 1){ //Setear la justificacion deseada
 		ADMUX |= (1 << ADLAR); 
 	}
 	else{
 		ADMUX &= ~(1 << ADLAR); 
 	}
 	
-	ADMUX = (ADMUX & 0xF0) | canal;
+	ADMUX = (ADMUX & 0xF0) | canal; //Encender el canal deseado
 }
 
 void controlADC(uint8_t enable, uint8_t trigger, uint8_t interrupcion, uint8_t prescaler){
 	if(enable == 1){
-		ADCSRA |= (1 << ADEN); 
+		ADCSRA |= (1 << ADEN);  // Enceder o apagar el ADC
 	}
 	else{
 		ADCSRA &= ~(1 << ADEN);
 	}
 	
 	if(trigger == 1){
-		ADCSRA |= (1 << ADATE);
+		ADCSRA |= (1 << ADATE);  // Seleccionar si se quiere utilizsar el autotrigger o no
 	}
 	else{
 		ADCSRA &= ~(1 << ADATE);
 	}
 	
-	if(interrupcion == 1){
+	if(interrupcion == 1){ // Seteara la interrupcion
 		ADCSRA |= (1 << ADIE); 
 	}
 	else {
 		ADCSRA &= ~(1 << ADIE);
 	}
 	
-	switch (prescaler){
+	switch (prescaler){ // Setear el prescaler deseado
 		case 2:
 			ADCSRA &= ~((1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));
 			break;
@@ -84,15 +84,4 @@ void controlADC(uint8_t enable, uint8_t trigger, uint8_t interrupcion, uint8_t p
 		default:
 			ADCSRA &= ~((1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));
 	} 
-}
-
-
-uint8_t readADC(uint8_t canal){
-	 ADMUX = (ADMUX & 0xF0) | canal;
-
-	 ADCSRA |= (1 << ADSC);
-
-	 while (ADCSRA & (1 << ADSC));
-
-	 return ADCH;
 }
