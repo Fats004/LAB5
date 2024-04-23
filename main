@@ -1,9 +1,16 @@
-*
- * Lab5.c
- *
- * Created: 4/14/2024 11:33:27 AM
- * Author : Fatima
- */ 
+//*******************************************************************************************************************************************
+// Universidad del Valle de Guatemala
+// IE2023 Programación de Microcontroladores
+// main.c
+// Proyecto: Prelab4
+// Hardware: ATMEGA328P
+// Created: 2/14/2024
+// Author : Fatima Urrutia
+//********************************************************************************************************************************************
+
+//********************************************************************************************************************************************
+// Librerias
+//********************************************************************************************************************************************
 
 # define F_CPU 16000000
 #include <avr/io.h>
@@ -12,46 +19,72 @@
 #include <util/delay.h>
 #include "ADC/ADC.h"
 #include "PWM1/PWM1.h"
+#include "PWM2/PWM2.h"
+#include "PWM0/PWM0.h"
 
+//********************************************************************************************************************************************
+// Variables Globales
+//********************************************************************************************************************************************
+
+uint8_t POT = 0;
 uint8_t POT1 = 0;
-uint8_t duty = 0;
+uint8_t POT2 = 0;
+uint8_t POT3 = 0;
+
+//********************************************************************************************************************************************
+// Main
+//********************************************************************************************************************************************
 
 int main(void)
 {	
-	setPWM1fastA(0, _8bits, 1024);
+	CLKPR |= (1 << CLKPCE); 
+	CLKPR |= (1 << CLKPS0); //8MHz
 	
-	setADC(externo, izquierda, 7);
+	DIDR0 |= (1 << ADC5D); //Apagar la entrada digital de PC5
 	
-	controlADC(1, 0, 1, 128);
+	setPWM0fastA(0, _FF0, 1024); // setear el PWM0 Fast
 	
-	sei();
+	setPWM1fastA(0, _8bits, 1024); // setear el PWM1 Fast
 	
-	//DDRD |= (1 << DDD6);
+	setPWM2fastA(0, _FF2, 1024); // setear el PWM2 Fast
 	
-	//TCCR0A = 0;
-	//TCCR0B = 0;
+	setADC(externo, izquierda, 7); // Setear el ADC
 	
-	//TCCR0A = (1 << COM0A1);
-
-	//TCCR0A |= (1 << WGM00) | (1 << WGM01);
-
-	//TCCR0B |= (1 << CS00) | (1 << CS02);
+	controlADC(1, 0, 1, 128); // Setear los registros de control del ADC
 	
-	//OCR1A = 127;
+	sei(); // Activar interrupciones globales
 	
     while (1) 
     {
-		ADCSRA |= (1 << ADSC);
+		ADCSRA |= (1 << ADSC); // Activar la conversion del ADC
 		
-		updateDutyA1(POT1/6);
+		updateDutyA1(POT1/6); //Actualizar el valor del duty cycle del primer servo con el del 1er potenciometro
+		updateDutyA2(POT2/6); // lo mismo con el seguno (se divide en 6 para lograr los 2 ms)
+		updateDutyA0(POT3); // Actualizar el valor del de la led con el 3er potenciometro
 		
 		_delay_ms(10);
     }
 }
 
+//********************************************************************************************************************************************
+// Interrupciones
+//********************************************************************************************************************************************
+
 ISR(ADC_vect){
-	 
-	POT1 = ADCH;
+	POT = (ADMUX & 0x0F); //Leer que potenciometro activo la interrupcion
+	
+	if (POT == 7){
+		POT1 = ADCH; //Leer el potenciometro activado
+		setADC(externo, izquierda,6); //Setear el siguiente potenciometro 
+	}
+	else if (POT == 6){
+		POT2 = ADCH;
+		setADC(externo, izquierda, 5);
+	}
+	else {
+		POT3 = ADCH;
+		setADC(externo, izquierda, 7);
+	}
 	
 	ADCSRA |= (1 << ADIF); //Apagar la bandera de ADC
 }
