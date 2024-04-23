@@ -16,14 +16,14 @@ void setPWM1fastA(uint8_t invertido, uint8_t modo, uint16_t prescaler){
 	TCCR1A = 0;
 	TCCR1B = 0;
 	
-	if (invertido == 1){
+	if (invertido == 1){ // sETEAR SI ES INVERIDO O NO
 		TCCR1A |= (1 << COM1A1) | (1 << COM1A0);
 	}
 	else {
 		TCCR1A |= (1 << COM1A1);
 	}
 	
-	switch (modo){
+	switch (modo){ //Setear el modo FAST deseado
 		case 0:
 		TCCR1A |= (1 << WGM10);
 		TCCR1B |= (1 << WGM12);
@@ -50,7 +50,7 @@ void setPWM1fastA(uint8_t invertido, uint8_t modo, uint16_t prescaler){
 		TCCR1B |= (1 << WGM12);
 	}
 	
-	switch (prescaler){
+	switch (prescaler){ // Setear el prescaler deseado
 		case 0:
 		TCCR1B |= (1 << CS10);
 		break;
@@ -72,6 +72,12 @@ void setPWM1fastA(uint8_t invertido, uint8_t modo, uint16_t prescaler){
 	}
 	
 }
+
+
+void updateDutyA1(uint8_t dutycycle){
+	OCR1A = dutycycle; // Actlizar el dutycycle
+}
+
 
 
 void updateDutyA1(uint8_t dutycycle){
